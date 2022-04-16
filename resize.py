@@ -90,21 +90,20 @@ def find_new_size(im, proportion, height, width):
     return target_size
 
 
-def sourceset_files_sizes(dict_sorted, last_item_key, dir):
+def sourceset_files_sizes(dict_sorted, dir):
     """
-    Removes last item in srcset dict (which is largest or target size and is default)
-    TODO: can this be discarded given insertion order stability in dictionaries since Python 3.7?
+    TODO: can a sortedDict be discarded given insertion order stability in dictionaries since Python 3.7?
     Returns:
     dictionary of {width: "full_filename_at_that_width"}
     """
     output = ""
-    del(dict_sorted[last_item_key])
+
     for k in dict_sorted:
         output += '{} {}w,'.format(dir+dict_sorted[k], k)
     return output.strip(",")
 
 
-def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy,dir):
+def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy, dir):
     """
     Arguments:
     im - PIL Image object
@@ -135,7 +134,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
         while os.path.isdir(filename+"_v"+str(appendix)):
             appendix += 1
         appendix = "_v" + str(appendix)
-        
+
     newdir = filename+appendix
     os.mkdir(newdir)
     os.chdir(newdir)
@@ -170,11 +169,12 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     logger.debug("Sorted source set dictionary: {}".format(srcset_sorted))
     if breakpoint > 0:
         breakpoint_width = int(viewwidth * 0.5)
-        sizes = "(min-width: {}px) {}vw, {}vw".format(int(breakpoint),breakpoint_width,viewwidth)
+        sizes = "(min-width: {}px) {}vw, {}vw".format(int(breakpoint),
+                                                      breakpoint_width, viewwidth)
     elif breakpoint <= 0:
         sizes = "{}vw".format(viewwidth)
     srcset_html = '<img src="{}" srcset="{}" sizes="{}vw" alt="{}" loading="{}">'.format(
-        srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, final_item_key,dir), viewwidth, alt, "lazy" if lazy == 1 else "eager")
+        srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, dir), viewwidth, alt, "lazy" if lazy == 1 else "eager")
     with open(os.path.split(os.getcwd())[1]+".md", mode="w") as file:
         file.write(srcset_html)
     logger.debug("Source set HTML: {}".format(srcset_html))
@@ -226,7 +226,7 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=Non
                     target_size = find_new_size(im, proportion, height, width)
 
                     im_resize(im, infile, target_size,
-                              viewwidth, breakpoint, alt, quality, lazy_load,dir)
+                              viewwidth, breakpoint, alt, quality, lazy_load, dir)
 
             except OSError:
                 pass
