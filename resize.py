@@ -174,7 +174,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     elif breakpoint <= 0:
         sizes = "{}vw".format(viewwidth)
     srcset_html = '<img src="{}" srcset="{}" sizes="{}vw" alt="{}" loading="{}">'.format(
-        srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, dir), viewwidth, alt, "lazy" if lazy == 1 else "eager")
+        dir+srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, dir), viewwidth, alt, "lazy" if lazy == 1 else "eager")
     with open(os.path.split(os.getcwd())[1]+".md", mode="w") as file:
         file.write(srcset_html)
     logger.debug("Source set HTML: {}".format(srcset_html))
