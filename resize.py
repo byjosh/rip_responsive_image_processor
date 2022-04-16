@@ -100,8 +100,8 @@ def sourceset_files_sizes(dict_sorted, last_item_key):
     output = ""
     del(dict_sorted[last_item_key])
     for k in dict_sorted:
-        output += '{} {}w '.format(dict_sorted[k], k)
-    return output
+        output += '{} {}w,'.format(dict_sorted[k], k)
+    return output.strip(",")
 
 
 def im_resize(im, originalfilename, target, viewwidth, alt, quality, lazy):
@@ -165,7 +165,11 @@ def im_resize(im, originalfilename, target, viewwidth, alt, quality, lazy):
     srcset_sorted = SortedDict(srcset_dict)
     final_item_key = list(srcset_sorted.keys())[-1]
     logger.debug("Sorted source set dictionary: {}".format(srcset_sorted))
-
+    if breakpoint > 0:
+        breakpoint_width = int(viewwidth * 0.5)
+        sizes = "(min-width: {}px) {}vw, {}vw".format(int(breakpoint),breakpoint_width,viewwidth)
+    elif breakpoint <= 0:
+        sizes = "{}vw".format(viewwidth)
     srcset_html = '<img src="{}" srcset="{}" sizes="{}vw" alt="{}" loading="{}">'.format(
         srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, final_item_key), viewwidth, alt, "lazy" if lazy == 1 else "eager")
     with open(os.path.split(os.getcwd())[1]+".md", mode="w") as file:
@@ -177,7 +181,7 @@ def im_resize(im, originalfilename, target, viewwidth, alt, quality, lazy):
 
 
 @ begin.start(auto_convert=True)
-def main(proportion=0.0, height=0, width=0, viewwidth=100, alt=None, quality=75, lazy_load=1, loglevel='INFO', * files):
+def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=None, quality=75, lazy_load=1, loglevel='INFO', * files):
     """
     all arguments can be supplied as short versions e.g. -p 0.5 to halve the image in proportion
     only 1 of p,h, or w needed - along with alt text
@@ -187,6 +191,7 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, alt=None, quality=75,
     height - a target height in pixels
     width - a target width in pixels - only one of proportion, height or width needed
     viewwidth - CSS value 0 to 100 as percentage of viewport width used to select appropriate responsive image
+    breakpoint - will be used to specify half of viewwidth in responsive image e.g. (min-width: 1024px) 50vw, 100vw
     alt - alt text - required but asked for if multiple images or not supplied
     quality - JPEG quality 0 - 100 but use 50 to 95 probably
     lazy_load - if 1 then HTML tag output into markdown file will have loading="lazy" set
@@ -216,7 +221,7 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, alt=None, quality=75,
                     target_size = find_new_size(im, proportion, height, width)
 
                     im_resize(im, infile, target_size,
-                              viewwidth, alt, quality, lazy_load)
+                              viewwidth, breakpoint, alt, quality, lazy_load)
 
             except OSError:
                 pass
