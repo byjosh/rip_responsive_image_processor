@@ -104,13 +104,14 @@ def sourceset_files_sizes(dict_sorted, last_item_key):
     return output.strip(",")
 
 
-def im_resize(im, originalfilename, target, viewwidth, alt, quality, lazy):
+def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy):
     """
     Arguments:
     im - PIL Image object
     originalfilename - full file name with extension
     target - (width,height) integer tuple of target maximum size
     viewwidth - percentage of CSS view width vw that should be used in img tag - 100 for full width image
+    breakpoint - used in responsive image tag - see note for main function
     alt - alt text that one can supply on command line if a single image but will be asked for if multiple images processed
     quality - jpeg quality set at 75 by default as for Pillow - but try lower for smaller images
     lazy - whether img should be lazy or eager loading
