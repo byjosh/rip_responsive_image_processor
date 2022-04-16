@@ -133,8 +133,9 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
         appendix = 1
         while os.path.isdir(filename+"_v"+str(appendix)):
             appendix += 1
-        appendix = str(appendix)
-    newdir = filename+"_v"+appendix
+        appendix = "_v" + str(appendix)
+        
+    newdir = filename+appendix
     os.mkdir(newdir)
     os.chdir(newdir)
     logger.debug("Current working directory is: {}".format(os.getcwd()))
