@@ -90,7 +90,7 @@ def find_new_size(im, proportion, height, width):
     return target_size
 
 
-def sourceset_files_sizes(dict_sorted, last_item_key):
+def sourceset_files_sizes(dict_sorted, last_item_key, dir):
     """
     Removes last item in srcset dict (which is largest or target size and is default)
     TODO: can this be discarded given insertion order stability in dictionaries since Python 3.7?
@@ -100,11 +100,11 @@ def sourceset_files_sizes(dict_sorted, last_item_key):
     output = ""
     del(dict_sorted[last_item_key])
     for k in dict_sorted:
-        output += '{} {}w,'.format(dict_sorted[k], k)
+        output += '{} {}w,'.format(dir+dict_sorted[k], k)
     return output.strip(",")
 
 
-def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy):
+def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy,dir):
     """
     Arguments:
     im - PIL Image object
@@ -115,6 +115,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     alt - alt text that one can supply on command line if a single image but will be asked for if multiple images processed
     quality - jpeg quality set at 75 by default as for Pillow - but try lower for smaller images
     lazy - whether img should be lazy or eager loading
+    dir - quoted string of where images are uploaded - ends with forward slash
     Returns:
     None - saves images and HTML img tag text as MD in current folder (different for each image)
     """
@@ -173,7 +174,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     elif breakpoint <= 0:
         sizes = "{}vw".format(viewwidth)
     srcset_html = '<img src="{}" srcset="{}" sizes="{}vw" alt="{}" loading="{}">'.format(
-        srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, final_item_key), viewwidth, alt, "lazy" if lazy == 1 else "eager")
+        srcset_sorted[final_item_key], sourceset_files_sizes(srcset_sorted, final_item_key,dir), viewwidth, alt, "lazy" if lazy == 1 else "eager")
     with open(os.path.split(os.getcwd())[1]+".md", mode="w") as file:
         file.write(srcset_html)
     logger.debug("Source set HTML: {}".format(srcset_html))
@@ -183,7 +184,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
 
 
 @ begin.start(auto_convert=True)
-def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=None, quality=75, lazy_load=1, loglevel='INFO', * files):
+def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=None, quality=75, lazy_load=1, loglevel='INFO', dir="", * files):
     """
     all arguments can be supplied as short versions e.g. -p 0.5 to halve the image in proportion
     only 1 of p,h, or w needed - along with alt text
@@ -198,6 +199,8 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=Non
     quality - JPEG quality 0 - 100 but use 50 to 95 probably
     lazy_load - if 1 then HTML tag output into markdown file will have loading="lazy" set
     loglevel - development option of how much detail to show as program runs - 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
+    dir - quoted string of where images are uploaded - ends with forward slash
+    files - one or more files to convert using these settings - dialogue will ask for individual alt text
     """
     logging.basicConfig(level=loglevel)
     logger.debug("args {}".format(sys.argv[1:]))
@@ -223,7 +226,7 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=Non
                     target_size = find_new_size(im, proportion, height, width)
 
                     im_resize(im, infile, target_size,
-                              viewwidth, breakpoint, alt, quality, lazy_load)
+                              viewwidth, breakpoint, alt, quality, lazy_load,dir)
 
             except OSError:
                 pass
