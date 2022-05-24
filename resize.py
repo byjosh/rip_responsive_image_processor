@@ -148,14 +148,17 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
         new_dimensions = "_{}x{}".format(this_size[0], this_size[1])
         out = im.resize(this_size)
         rename = originalfilename.split(".")
+        extension = "jpg"
+        if rename[-1] in ["PNG","png"]:
+            extension = rename[-1]
         this_file = "".join(rename[0:-1]) + \
-            new_dimensions + "." + str(rename[-1])
+            new_dimensions + "." + str(extension)
         srcset_dict[this_size[0]] = this_file
         logger.debug("current filename is: {}".format(this_file))
         # added quality for JPEGs and optimize for PNGs
-        if str(rename[-1]) in ["JPG", "JPEG", "jpeg", "jpg"]:
+        if str(extension) in ["JPG", "JPEG", "jpeg", "jpg"]:
             out.save(this_file, quality=quality, progessive=True)
-        elif str(rename[-1]) in ["PNG", "png"]:
+        elif str(extension) in ["PNG", "png"]:
             out.save(this_file, compress_level=9, exif="")
         with Image.open(this_file) as img:
             logger.debug("About to do EXIF transpose")
