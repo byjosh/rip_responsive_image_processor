@@ -103,7 +103,7 @@ def sourceset_files_sizes(dict_sorted, dir):
     return output.strip(",")
 
 
-def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy, dir, enclosingelement):
+def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality, lazy, dir, enclosingelement, originals):
     """
     Arguments:
     im - PIL Image object
@@ -116,6 +116,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     lazy - whether img should be lazy or eager loading
     dir - quoted string of where images are uploaded - ends with forward slash
     enclosingelement - as per main function - '<li>@</li>' for example should be split by @ char
+    originals - specifiy a value to include original file in output (e.g. for larger/hi res screens)
     Returns:
     None - saves images and HTML img tag text as MD in current folder (different for each image)
     """
@@ -123,6 +124,8 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
     sizes = [200, 400, 600, 768, 960, 1024, 1440, 1920]
     # only use ones smaller than target size width
     new_sizes = [x for x in sizes if x < target[0]]
+    if originals != None:
+        new_sizes.append(im.size[0])
     srcset_dict = {}
 
     # create folder for output of each file
@@ -194,7 +197,7 @@ def im_resize(im, originalfilename, target, viewwidth, breakpoint, alt, quality,
 
 
 @ begin.start(auto_convert=True)
-def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=None, quality=75, lazy_load=1, loglevel='INFO', dir="", enclosingelement="", * files):
+def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=None, quality=75, lazy_load=1, loglevel='INFO', dir="", enclosingelement="", originals=None, * files):
     """
     all arguments can be supplied as short versions e.g. -p 0.5 to halve the image in proportion
     only 1 of p,h, or w needed - along with alt text
@@ -240,7 +243,7 @@ def main(proportion=0.0, height=0, width=0, viewwidth=100, breakpoint=0, alt=Non
                     target_size = find_new_size(im, proportion, height, width)
 
                     im_resize(im, infile, target_size,
-                              viewwidth, breakpoint, alt, quality, lazy_load, dir, enclosingelement)
+                              viewwidth, breakpoint, alt, quality, lazy_load, dir, enclosingelement, originals)
 
             except OSError:
                 pass
